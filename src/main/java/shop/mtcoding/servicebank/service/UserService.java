@@ -2,7 +2,6 @@ package shop.mtcoding.servicebank.service;
 
 import java.util.Optional;
 
-import org.hibernate.type.TrueFalseType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import shop.mtcoding.servicebank.core.exception.Exception400;
 import shop.mtcoding.servicebank.core.exception.Exception401;
 import shop.mtcoding.servicebank.core.exception.Exception404;
+import shop.mtcoding.servicebank.core.exception.Exception500;
 import shop.mtcoding.servicebank.core.session.SessionUser;
 import shop.mtcoding.servicebank.dto.user.UserRequest;
 import shop.mtcoding.servicebank.dto.user.UserResponse;
@@ -39,8 +39,7 @@ public class UserService {
             // Lazy 로딩의 책임을 가지고 있다. - 응답의 Dto - 필요할때 조회
             return new UserResponse.JoinOutDTO(userPS);
         } catch (Exception e) {
-            throw new Exception500(e, null)
-            
+            throw new Exception500("회원가입 오류 : " + e.getMessage());
         }
     }
 
