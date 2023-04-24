@@ -45,6 +45,7 @@ public class MyExceptionAdvice {
         return new ResponseEntity<>(responseDto, HttpStatus.NOT_FOUND);
     }
 
+    // Service try catch시 사용한다.
     @ExceptionHandler(Exception500.class)
     public ResponseEntity<?> serverError(Exception500 e){
         return new ResponseEntity<>(e.body(), e.status());

@@ -1,10 +1,14 @@
 package shop.mtcoding.servicebank.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shop.mtcoding.servicebank.core.exception.Exception400;
 import shop.mtcoding.servicebank.core.exception.Exception404;
+import shop.mtcoding.servicebank.core.exception.Exception500;
 import shop.mtcoding.servicebank.dto.account.AccountRequest;
 import shop.mtcoding.servicebank.dto.account.AccountResponse;
 import shop.mtcoding.servicebank.dto.user.UserResponse;
@@ -18,6 +22,7 @@ import shop.mtcoding.servicebank.model.user.UserRepository;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class AccountService {
@@ -27,21 +32,26 @@ public class AccountService {
 
     @Transactional
     public AccountResponse.SaveOutDTO 계좌등록(AccountRequest.SaveInDTO saveInDTO, Long userId) {
-        // 1. 회원 존재 여부
-        User userPS = userRepository.findById(userId).orElseThrow(
-                () -> new Exception404("유저를 찾을 수 없습니다"));
+        try {
+            // 1. 회원 존재 여부
+            User userPS = userRepository.findById(userId).orElseThrow(
+                    () -> new Exception404("유저를 찾을 수 없습니다"));
 
-        // 2. 계좌 존재 여부
-        Optional<Account> accountOP = accountRepository.findByNumber(saveInDTO.getNumber());
-        if (accountOP.isPresent()) {
-            throw new Exception400("number", "해당 계좌가 이미 존재합니다");
+            // 2. 계좌 존재 여부
+            Optional<Account> accountOP = accountRepository.findByNumber(saveInDTO.getNumber());
+            if (accountOP.isPresent()) {
+                throw new Exception400("number", "해당 계좌가 이미 존재합니다");
+            }
+
+            // 3. 계좌 등록
+            Account accountPS = accountRepository.save(saveInDTO.toEntity(userPS));
+
+            // 4. DTO 응답
+            return new AccountResponse.SaveOutDTO(accountPS);
+        } catch (Exception e) {
+            log.warn("계좌등록 오류");
+            throw new Exception500("계좌등록 오류 : "+ e.getMessage());
         }
-
-        // 3. 계좌 등록
-        Account accountPS = accountRepository.save(saveInDTO.toEntity(userPS));
-
-        // 4. DTO 응답
-        return new AccountResponse.SaveOutDTO(accountPS);
     }
 
     @Transactional(readOnly = true)
